@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Event Listener</title>
+</head>
+<body>
+    <p>Hello {{ name }}</p>
+    <button id="myButton">Click me!</button>
+    <p id="zz"></p>
+
+    <script>
+        // Get a reference to the button
+        const buttonElement = document.getElementById('myButton');
+        const zzzPara = document.getElementById('zz')
+
+        // Define the function to be executed on click
+        function buttonClickHandler() {
+            const url = 'http://localhost:5000/testtest'
+            fetch(url)
+                .then(response => {
+                    // Check if the request was successful
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(hehe => {
+                    zzzPara.textContent += hehe
+                })
+            
+        }
+
+        // Add the event listener
+        buttonElement.addEventListener('click', buttonClickHandler);
+    </script>
+</body>
+</html>
