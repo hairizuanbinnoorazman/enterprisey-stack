@@ -1,0 +1,79 @@
+services:
+  ldap:
+    image: osixia/openldap:1.5.0
+    container_name: ldap
+    environment:
+      LDAP_ORGANISATION: "Example Corp"
+      LDAP_DOMAIN: "example.org"
+      LDAP_ADMIN_PASSWORD: admin
+    ports:
+      - "389:389"
+
+  ldapadmin:
+    image: osixia/phpldapadmin:latest
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap
+      PHPLDAPADMIN_HTTPS: false
+    ports:
+      - "8080:80"
+  # keycloak:
+  #   image: quay.io/keycloak/keycloak:25.0.6
+  #   container_name: keycloak
+  #   environment:
+  #     KC_DB: dev-mem
+  #     KEYCLOAK_ADMIN: admin
+  #     KEYCLOAK_ADMIN_PASSWORD: admin
+  #     KC_HTTP_RELATIVE_PATH: /auth
+  #   command:
+  #     - start-dev
+  #     - --import-realm
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - ldap
+  # authentik-server:
+  #   image: ghcr.io/goauthentik/server
+  #   environment:
+  #     AUTHENTIK_SECRET_KEY: your-secret-key
+  #     AUTHENTIK_POSTGRESQL__HOST: db
+  #     AUTHENTIK_POSTGRESQL__PORT: '5432'
+  #     AUTHENTIK_POSTGRESQL__USER: authentik
+  #     AUTHENTIK_POSTGRESQL__PASSWORD: password
+  #     AUTHENTIK_POSTGRESQL__NAME: authentik
+  #     AUTHENTIK_REDIS__HOST: redis
+  #     AUTHENTIK_REDIS__PORT: 6379
+  #   ports:
+  #     - "9000:9000"
+  #   command:
+  #     - authentik
+  #     - shell
+  #   depends_on:
+  #     - db
+
+  # db:
+  #   image: postgres:15
+  #   environment:
+  #     POSTGRES_DB: authentik
+  #     POSTGRES_USER: authentik
+  #     POSTGRES_PASSWORD: password
+
+  # redis:
+  #   image: redis
+  dex:
+    image: ghcr.io/dexidp/dex
+    ports:
+      - "5556:5556"
+    command: dex serve /etc/dex/config.yaml
+    volumes:
+      - ./dex/config.yaml:/etc/dex/config.yaml
+
+  # flask:
+  #   build: ./app
+  #   container_name: flask-app
+  #   environment:
+  #     - FLASK_ENV=development
+  #     - OIDC_CLIENT_ID=flask
+  #     - OIDC_CLIENT_SECRET=flask-secret
+  #     - OIDC_ISSUER=http://
+  #   ports:
+  #     - "5000:5000"

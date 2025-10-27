@@ -1,0 +1,30 @@
+issuer: http://127.0.0.1:5556
+storage:
+  type: memory
+connectors:
+- type: ldap
+  id: ldap
+  name: Example LDAP
+  config:
+    host: ldap:389
+    insecureNoSSL: true
+    bindDN: cn=admin,dc=example,dc=org
+    bindPW: admin
+    userSearch:
+      baseDN: ou=users,dc=example,dc=org
+      filter: "(objectClass=person)"
+      username: uid
+      idAttr: uid
+      emailAttr: mail
+web:
+  http: 0.0.0.0:5556
+  prefix: /
+staticClients:
+- id: flask
+  redirectURIs:
+  - 'http://localhost:5000/auth'
+  name: 'Flask App'
+  secret: flask-secret
+- id: ultimate
+  name: 'Utilmate app'
+  secret: flask-secret
