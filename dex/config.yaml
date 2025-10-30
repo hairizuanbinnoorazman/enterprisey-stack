@@ -1,6 +1,8 @@
 issuer: http://127.0.0.1:5556
 storage:
   type: memory
+oauth2:
+  accessTokenStrategy: jwt
 connectors:
 - type: ldap
   id: ldap

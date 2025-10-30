@@ -6,9 +6,9 @@ name = "pypi"
 [packages]
 jwt = "*"
 flask = "*"
-authlib = "*"
 requests = "*"
 pyjwt = "*"
+authlib = "*"
 
 [dev-packages]
 

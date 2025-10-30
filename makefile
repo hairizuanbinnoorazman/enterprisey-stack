@@ -6,4 +6,4 @@ ultimate:
 	python ultimate.py
 
 check:
-	curl -H "Authorization: Bearer XXX.XXX.XXX" localhost:5001/api/resource
+	curl -H "Authorization: Bearer xxx" localhost:5001/api/resource
