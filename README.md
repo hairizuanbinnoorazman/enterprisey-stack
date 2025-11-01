@@ -20,6 +20,10 @@ Details for what the user info means
 }
 ```
 
+## Learnings
+
+- Do not use RFC-9068 unless absolutely needed. It seems like the usual authentication servers don't properly support it in the first place - so could be possible that this is a standard that's not really followed. This is the version that has `jti` requirements + headers `typ` would be `at+jwt` instead of usual `JWT`
+
 ## Current Working Prompt
 
 I have the following in my stack:
@@ -36,8 +40,45 @@ How can i have application A call to application B (also another flask app) but 
 
 Ignore setting up openldap, phpldapadmin and dex - i have already had them running for a while. Just focus only on application B
 
-## Quickstart
+## Quickstart for phpldapadmin
 
 For logging into osixia/phpldapadmin:latest, use the following credentials:
 
 cn=admin,dc=example,dc=org / admin
+
+The following container has capability to alter ldap entries
+
+## Quickstart for Dex
+
+There is nothing we need to do here, we simply need set it up with the dex configuration
+
+## Quickstart for authentik
+
+Most bigger companies rely on LDAP. So let's assume to go with the direction of not needing to setup authentication. Authentik is so much harder to use - there is way more things to set up
+
+To setup LDAP Source:  
+Directory -> Federation and Social Login -> Create -> LDAP Source
+
+Configurations:
+
+- Server URI: ldap://ldap:389
+- Sync Users: True
+- Sync Group: False (for easier setup)
+- Bind CN: cn=admin,dc=example,dc=org
+- Bind Password: admin
+- Base DN: ou=users,dc=example,dc=org
+- LDAP User Mapping:
+  - LDAP Mapping: mail
+  - LDAP Mapping: uid
+
+After setting up LDAP Source, it syncs users into a particular user group set
+
+We then need to setup the following:
+
+- Providers (Set up Oauth provider)
+  - Redirect URLs: .*
+  - Access Token: 1hr? So that it'll be easier to debug?
+  - Scopes: email, offline_access, profile, openid
+  - This generates a client ID and client secret that can be injected into our plain old python applications (main.py and ultimate.py)
+- Application
+  - Point the provider to the one we created above
