@@ -50,6 +50,33 @@ services:
   #     - OIDC_ISSUER=http://
   #   ports:
   #     - "5000:5000"
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui:/app/backend/data
+    environment:
+      WEBUI_URL: http://localhost:3000
+      WEBUI_SECRET_KEY: your_secret_key
+      ENABLE_OAUTH_PERSISTENT_CONFIG: false
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: false
+      OAUTH_UPDATE_PICTURE_ON_LOGIN: false
+      OAUTH_CLIENT_ID: XXX
+      OAUTH_CLIENT_SECRET: XXX
+      # It cannot redirect to oidc if host is localhost
+      OPENID_PROVIDER_URL: http://server:9000/application/o/zzz/.well-known/openid-configuration
+      OAUTH_SCOPES: openid email profile offline-access
+      OPENID_REDIRECT_URI: http://localhost:3000/oauth/oidc/callback
+      # To prevent confusion of what is used for username of the system
+      OIDC_USERNAME_CLAIM: email
+      OIDC_ISSUER_URL: http://server:9000/application/o/zzz/
+      # GLOBAL_LOG_LEVEL: DEBUG
+      OIDC_ALLOWED_GROUPS: admin,users
+      # Required - or else will get error 403 as user not found
+      ENABLE_OAUTH_SIGNUP: true
+  
+  
   postgresql:
     env_file:
     - .env
@@ -114,4 +141,6 @@ services:
     - ./custom-templates:/templates
 volumes:
   database:
+    driver: local
+  open-webui:
     driver: local
