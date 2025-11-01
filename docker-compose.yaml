@@ -31,34 +31,7 @@ services:
   #     - "8080:8080"
   #   depends_on:
   #     - ldap
-  # authentik-server:
-  #   image: ghcr.io/goauthentik/server
-  #   environment:
-  #     AUTHENTIK_SECRET_KEY: your-secret-key
-  #     AUTHENTIK_POSTGRESQL__HOST: db
-  #     AUTHENTIK_POSTGRESQL__PORT: '5432'
-  #     AUTHENTIK_POSTGRESQL__USER: authentik
-  #     AUTHENTIK_POSTGRESQL__PASSWORD: password
-  #     AUTHENTIK_POSTGRESQL__NAME: authentik
-  #     AUTHENTIK_REDIS__HOST: redis
-  #     AUTHENTIK_REDIS__PORT: 6379
-  #   ports:
-  #     - "9000:9000"
-  #   command:
-  #     - authentik
-  #     - shell
-  #   depends_on:
-  #     - db
 
-  # db:
-  #   image: postgres:15
-  #   environment:
-  #     POSTGRES_DB: authentik
-  #     POSTGRES_USER: authentik
-  #     POSTGRES_PASSWORD: password
-
-  # redis:
-  #   image: redis
   dex:
     image: ghcr.io/dexidp/dex
     ports:
@@ -77,3 +50,68 @@ services:
   #     - OIDC_ISSUER=http://
   #   ports:
   #     - "5000:5000"
+  postgresql:
+    env_file:
+    - .env
+    environment:
+      POSTGRES_DB: ${PG_DB:-authentik}
+      POSTGRES_PASSWORD: ${PG_PASS:?database password required}
+      POSTGRES_USER: ${PG_USER:-authentik}
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      test:
+      - CMD-SHELL
+      - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+      timeout: 5s
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+    - database:/var/lib/postgresql/data
+  server:
+    command: server
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    env_file:
+    - .env
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.10.0}
+    ports:
+    - ${COMPOSE_PORT_HTTP:-9000}:9000
+    - ${COMPOSE_PORT_HTTPS:-9443}:9443
+    restart: unless-stopped
+    volumes:
+    - ./media:/media
+    - ./custom-templates:/templates
+  worker:
+    command: worker
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    env_file:
+    - .env
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.10.0}
+    restart: unless-stopped
+    user: root
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./media:/media
+    - ./certs:/certs
+    - ./custom-templates:/templates
+volumes:
+  database:
+    driver: local
