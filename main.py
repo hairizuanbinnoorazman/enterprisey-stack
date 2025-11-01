@@ -9,9 +9,9 @@ app.secret_key = "secret-key"
 oauth = OAuth(app)
 keycloak = oauth.register(
     name="Flask App",
-    client_id=os.getenv("OIDC_CLIENT_ID"),
-    client_secret=os.getenv("OIDC_CLIENT_SECRET"),
-    server_metadata_url=f"{os.getenv('OIDC_ISSUER')}/.well-known/openid-configuration",
+    client_id=os.environ["OIDC_CLIENT_ID"],
+    client_secret=os.environ["OIDC_CLIENT_SECRET"],
+    server_metadata_url=f"{os.environ['OIDC_ISSUER']}.well-known/openid-configuration",
     client_kwargs={
         "scope": "openid email profile offline_access",
         "token_endpoint_auth_method": "client_secret_basic",
