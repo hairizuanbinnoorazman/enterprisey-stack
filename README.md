@@ -23,6 +23,12 @@ Details for what the user info means
 ## Learnings
 
 - Do not use RFC-9068 unless absolutely needed. It seems like the usual authentication servers don't properly support it in the first place - so could be possible that this is a standard that's not really followed. This is the version that has `jti` requirements + headers `typ` would be `at+jwt` instead of usual `JWT`
+- Some Important RFC to take note of (because the end goal is to get this whole enterprisey stack working with MCP Clients + Servers)
+  - RFC 7591 - Oauth 2.0 Dynamic Client Registration Protocol
+  - RFC 8414 - Oauth 2.0 Authorization Server Metadata
+  - RFC 8707 - Resource Indicators for Oauth 2.0
+  - RFC 9068 - JWT Profile for Oauth 2.0 Access Tokens
+  - RFC 9728 - Oauth 2.0 Protected Resource Metadata
 
 ## Current Working Prompt
 
