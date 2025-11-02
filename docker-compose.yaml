@@ -56,6 +56,8 @@ services:
       - "3000:8080"
     volumes:
       - open-webui:/app/backend/data
+    env_file:
+    - .env
     environment:
       WEBUI_URL: http://localhost:3000
       WEBUI_SECRET_KEY: your_secret_key
@@ -82,8 +84,22 @@ services:
     environment:
       DISABLE_MODEL_MAPPING: "1"
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+    env_file:
+    - .env
     image: zhu327/gemini-openai-proxy:latest
     restart: unless-stopped
+
+  mcpo:
+    build:
+      context: mcpo
+      dockerfile: Dockerfile
+    ports:
+      - "9100:8080"
+
+  example_mcp:
+    build:
+      context: example-mcp
+      dockerfile: Dockerfile
   
   postgresql:
     env_file:
