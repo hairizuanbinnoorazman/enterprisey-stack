@@ -75,7 +75,15 @@ services:
       OIDC_ALLOWED_GROUPS: admin,users
       # Required - or else will get error 403 as user not found
       ENABLE_OAUTH_SIGNUP: true
+      OPENAI_API_BASE_URL: http://gemini:8080/v1
+      OPENAI_API_KEY: ${GOOGLE_API_KEY}
   
+  gemini:
+    environment:
+      DISABLE_MODEL_MAPPING: "1"
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+    image: zhu327/gemini-openai-proxy:latest
+    restart: unless-stopped
   
   postgresql:
     env_file:
