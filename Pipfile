@@ -9,6 +9,8 @@ flask = "*"
 authlib = "*"
 requests = "*"
 pyjwt = "*"
+fastmcp = "*"
+uvicorn = "*"
 
 [dev-packages]
 
