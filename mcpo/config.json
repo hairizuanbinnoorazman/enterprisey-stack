@@ -1,0 +1,8 @@
+{
+    "mcpServers": {
+        "example": {
+            "type": "streamable_http",
+            "url": "http://example_mcp:9000/mcp"
+        }
+      }
+  }
