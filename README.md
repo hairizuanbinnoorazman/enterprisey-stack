@@ -23,7 +23,7 @@ Details for what the user info means
 ## Learnings
 
 - Do not use RFC-9068 unless absolutely needed. It seems like the usual authentication servers don't properly support it in the first place - so could be possible that this is a standard that's not really followed. This is the version that has `jti` requirements + headers `typ` would be `at+jwt` instead of usual `JWT`
-- IMPORTANT: In order to make it pass the right authorization token - choose "system". Check under backend/open_webui/utils/tools.py - get_tools function
+- IMPORTANT: In order to make it pass the right authorization token - choose "system". Check under backend/open_webui/utils/tools.py - get_tools function. Refer to edit_connection.png for how it'll look like.
 - Some Important RFC to take note of (because the end goal is to get this whole enterprisey stack working with MCP Clients + Servers)
   - RFC 7591 - Oauth 2.0 Dynamic Client Registration Protocol
     - It's needed for public MCP Servers; if developers intend to authenticate to various services, need to make it easier to register their mcp servers against something. However, in the case where there is only a small number of servers to be setup, maybe it's not necessary to be implemented?
