@@ -23,6 +23,7 @@ Details for what the user info means
 ## Learnings
 
 - Do not use RFC-9068 unless absolutely needed. It seems like the usual authentication servers don't properly support it in the first place - so could be possible that this is a standard that's not really followed. This is the version that has `jti` requirements + headers `typ` would be `at+jwt` instead of usual `JWT`
+- IMPORTANT: In order to make it pass the right authorization token - choose "system". Check under backend/open_webui/utils/tools.py - get_tools function
 - Some Important RFC to take note of (because the end goal is to get this whole enterprisey stack working with MCP Clients + Servers)
   - RFC 7591 - Oauth 2.0 Dynamic Client Registration Protocol
     - It's needed for public MCP Servers; if developers intend to authenticate to various services, need to make it easier to register their mcp servers against something. However, in the case where there is only a small number of servers to be setup, maybe it's not necessary to be implemented?
@@ -94,3 +95,41 @@ We then need to setup the following:
   - This generates a client ID and client secret that can be injected into our plain old python applications (main.py and ultimate.py)
 - Application
   - Point the provider to the one we created above
+
+## Debugging guide
+
+The following curl command was used to debug if request heading to mcpo would capture the headers needed
+
+```bash
+curl -X POST http://localhost:9100/example/add -H "Content-Type: application/json"  -H "X-User-Miao: acac"  -H "Authorization: Bearer abc123" -d '{"a": 1, "b": 2}'
+```
+
+In order to view http requests coming in, we can install tcpdump. Requests are still sent via http between each other
+
+```bash
+tcpdump port 8080 -s 0 -A
+tcpdump port 9000 -s 0 -A
+```
+
+For tcpdump, there will be sections that'll look like this
+
+```bash
+POST /example/add HTTP/1.1
+Host: mcpo:8080
+Authorization: Bearer abc123
+Content-Type: application/json
+Accept: */*
+Accept-Encoding: gzip, deflate, br
+User-Agent: Python/3.11 aiohttp/3.12.15
+Content-Length: 17
+```
+
+To modify and add more logs in mcpo or mcp container
+
+```bash
+# Need to install vim as well
+/usr/local/lib/python3.12/site-packages/
+
+# OR
+/app/.venv/lib/python3.12/site-packages/
+```
