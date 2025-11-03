@@ -61,6 +61,9 @@ services:
     environment:
       WEBUI_URL: http://localhost:3000
       WEBUI_SECRET_KEY: your_secret_key
+      # Doesn't really work with MCP Tools
+      ENABLE_FORWARD_USER_INFO_HEADERS: true
+      OFFLINE_MODE: true
       ENABLE_OAUTH_PERSISTENT_CONFIG: false
       OAUTH_MERGE_ACCOUNTS_BY_EMAIL: false
       OAUTH_UPDATE_PICTURE_ON_LOGIN: false
@@ -90,11 +93,16 @@ services:
     restart: unless-stopped
 
   mcpo:
+    # image: lol:v1
+    command: "uv run --no-sync mcpo --host 0.0.0.0 --port 8080 --config /app/config.json --log-level debug"
+    # command: "sleep infinity"
     build:
       context: mcpo
-      dockerfile: Dockerfile
+      dockerfile: lol.Dockerfile
     ports:
       - "9100:8080"
+    depends_on:
+      - example_mcp
 
   example_mcp:
     build:
