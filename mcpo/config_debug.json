@@ -5,5 +5,10 @@
             "url": "http://example_mcp:9000/mcp"
         }
     },
+    "client_header_forwarding": {
+        "enabled": true,
+        "whitelist": ["Authorization", "X-User-*"],
+        "debug_headers": true
+    },
     "log_level": "debug"
 }
