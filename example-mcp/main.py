@@ -11,6 +11,7 @@ Run:
 from __future__ import annotations
 import os
 import re
+import logging
 from pathlib import Path
 from typing import Optional
 
@@ -30,20 +31,22 @@ mcp = FastMCP("Demo MCP Server")
 @mcp.tool()
 async def add(context: Context, a: int, b: int) -> int:
     """Add two integers and return the sum."""
-    print(f"Client ID: {context.client_id}")
-    print(f"Session ID: {context.session_id}")
+    await context.info(f"DAAAAMMMMMNNN: {context.request_context.meta}")
+    await context.info(f"Client ID: {context.client_id}")
+    await context.info(f"Session ID: {context.session_id}")
+    await context.info(f"{context.get_http_request().headers}")
     
     if hasattr(context, 'user'):
-        print(f"User: {context.user}")
+        await context.info(f"User: {context.user}")
     if hasattr(context, 'username'):
-        print(f"Username: {context.username}")
+        await context.info(f"Username: {context.username}")
     if hasattr(context, 'user_id'):
-        print(f"User ID: {context.user_id}")
+        await context.info(f"User ID: {context.user_id}")
     
-    print(f"Context attributes: {[attr for attr in dir(context) if not attr.startswith('_')]}")
+    await context.info(f"Context attributes: {[attr for attr in dir(context) if not attr.startswith('_')]}")
     
-    print(f"a: {a}")
-    print(f"b: {b}")
+    await context.info(f"a: {a}")
+    await context.info(f"b: {b}")
     return a + b
 
 if __name__ == "__main__":
