@@ -4,9 +4,10 @@ import requests
 
 # Important - issuer is very strict
 # Every single character needs to be there
-DEX_URL = "http://localhost:9000/application/o/zzz/"
+# DEX_URL = "http://localhost:9000/application/o/zzz/"
+DEX_URL = "http://server:5556"
 
-jwks_url = f"{DEX_URL}.well-known/openid-configuration"
+jwks_url = f"{DEX_URL}/.well-known/openid-configuration"
 jwks_uri = requests.get(jwks_url).json()["jwks_uri"]
 
 token = "XXX"
