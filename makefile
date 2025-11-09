@@ -1,6 +1,10 @@
 -include .env
 export
 
+.PHONY: dex
+dex:
+	docker compose -f docker-compose.yaml -f docker-compose-dex.yaml up -d --build
+
 app:
 	python main.py
 
