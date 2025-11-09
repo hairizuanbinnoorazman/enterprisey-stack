@@ -1,0 +1,42 @@
+services:
+  server:
+    image: ghcr.io/dexidp/dex
+    ports:
+      - "5556:5556"
+    command: dex serve /etc/dex/config.yaml
+    volumes:
+      - ./dex/config.yaml:/etc/dex/config.yaml
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui:/app/backend/data
+    environment:
+      WEBUI_URL: http://localhost:3000
+      WEBUI_SECRET_KEY: your_secret_key
+      # Doesn't really work with MCP Tools
+      ENABLE_FORWARD_USER_INFO_HEADERS: true
+      OFFLINE_MODE: true
+      ENABLE_OAUTH_PERSISTENT_CONFIG: false
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: false
+      OAUTH_UPDATE_PICTURE_ON_LOGIN: false
+      OAUTH_SCOPES: openid email profile offline_access
+      OPENID_REDIRECT_URI: http://localhost:3000/oauth/oidc/callback
+      # To prevent confusion of what is used for username of the system
+      OIDC_USERNAME_CLAIM: email
+      # GLOBAL_LOG_LEVEL: DEBUG
+      OIDC_ALLOWED_GROUPS: admin,users
+      # Required - or else will get error 403 as user not found
+      ENABLE_OAUTH_SIGNUP: true
+      OPENAI_API_BASE_URL: http://gemini:8080/v1
+      OPENAI_API_KEY: ${GOOGLE_API_KEY}
+      OAUTH_CLIENT_ID: ${OIDC_CLIENT_ID}
+      OAUTH_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      OPENID_PROVIDER_URL: ${OIDC_ISSUER}/.well-known/openid-configuration
+
+
+volumes:
+  open-webui:
+    driver: local

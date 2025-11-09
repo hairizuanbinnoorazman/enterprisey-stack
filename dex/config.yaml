@@ -1,4 +1,4 @@
-issuer: http://127.0.0.1:5556
+issuer: http://server:5556
 storage:
   type: memory
 connectors:
@@ -11,7 +11,7 @@ connectors:
     bindDN: cn=admin,dc=example,dc=org
     bindPW: admin
     userSearch:
-      baseDN: ou=users,dc=example,dc=org
+      baseDN: ou=hehe,dc=example,dc=org
       filter: "(objectClass=person)"
       username: uid
       idAttr: uid
@@ -23,6 +23,13 @@ staticClients:
 - id: flask
   redirectURIs:
   - 'http://localhost:5000/auth'
+  name: 'Flask App'
+  secret: flask-secret
+  trustedPeers:
+    - openwebui
+- id: openwebui
+  redirectURIs:
+  - 'http://localhost:3000/oauth/oidc/callback'
   name: 'Flask App'
   secret: flask-secret
 - id: ultimate

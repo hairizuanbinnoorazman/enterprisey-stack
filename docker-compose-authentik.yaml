@@ -1,0 +1,101 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui:/app/backend/data
+    env_file:
+      - .env
+    environment:
+      WEBUI_URL: http://localhost:3000
+      WEBUI_SECRET_KEY: your_secret_key
+      # Doesn't really work with MCP Tools
+      ENABLE_FORWARD_USER_INFO_HEADERS: true
+      OFFLINE_MODE: true
+      ENABLE_OAUTH_PERSISTENT_CONFIG: false
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: false
+      OAUTH_UPDATE_PICTURE_ON_LOGIN: false
+      OAUTH_CLIENT_ID: ${OIDC_CLIENT_ID}
+      OAUTH_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      # It cannot redirect to oidc if host is localhost
+      OPENID_PROVIDER_URL: http://server:9000/application/o/zzz/.well-known/openid-configuration
+      OAUTH_SCOPES: openid email profile offline-access
+      OPENID_REDIRECT_URI: http://localhost:3000/oauth/oidc/callback
+      # To prevent confusion of what is used for username of the system
+      OIDC_USERNAME_CLAIM: email
+      OIDC_ISSUER_URL: http://server:9000/application/o/zzz/
+      # GLOBAL_LOG_LEVEL: DEBUG
+      OIDC_ALLOWED_GROUPS: admin,users
+      # Required - or else will get error 403 as user not found
+      ENABLE_OAUTH_SIGNUP: true
+      OPENAI_API_BASE_URL: http://gemini:8080/v1
+      OPENAI_API_KEY: ${GOOGLE_API_KEY}
+  
+  postgresql:
+    env_file:
+    - .env
+    environment:
+      POSTGRES_DB: ${PG_DB:-authentik}
+      POSTGRES_PASSWORD: ${PG_PASS:?database password required}
+      POSTGRES_USER: ${PG_USER:-authentik}
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      test:
+      - CMD-SHELL
+      - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+      timeout: 5s
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+    - database:/var/lib/postgresql/data
+  server:
+    command: server
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    env_file:
+    - .env
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.10.0}
+    ports:
+    - ${COMPOSE_PORT_HTTP:-9000}:9000
+    - ${COMPOSE_PORT_HTTPS:-9443}:9443
+    restart: unless-stopped
+    volumes:
+    - ./media:/media
+    - ./custom-templates:/templates
+  worker:
+    command: worker
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    env_file:
+    - .env
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.10.0}
+    restart: unless-stopped
+    user: root
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./media:/media
+    - ./certs:/certs
+    - ./custom-templates:/templates
+volumes:
+  database:
+    driver: local
+  open-webui:
+    driver: local
